@@ -581,6 +581,7 @@ static int matchBrackets (const char * br)
 static const char BR_CUR[] = "{}";
 static const char BR_PAR[] = "()";
 static const char BR_SQ[] = "[]";
+static const char BR_ANG[] = "<>";
 
 /* List of TTCN operators.
    A dot (.) is not a TTCN operator but it is included to simplify
@@ -769,6 +770,8 @@ static int parseType (void)
 			/* ModuleID.TypeID */
 			if (matchToken('.') && !(matchToken(T_ID)))
 				break;
+            /* FormalTypeParList */
+            matchBrackets(BR_ANG);
 			/* TypeActualParList */
 			matchBrackets(BR_PAR);
 			/* ExtendedFieldReference */
@@ -894,7 +897,7 @@ static int parseTypeDefBody (void)
 			/* SubTypeDef */
 			ungetToken();
 			/* Stop after type name, no need to parse ArrayDef, StringLength, etc */
-			return (parseType() && parseID(K_TYPE));
+			return parseType() && parseID(K_TYPE);
 	}
 }
 
@@ -933,7 +936,9 @@ static void parseTTCN (void)
 			case T_TEMPLATE:
 				/* A.1.6.1.3 TemplateDef ::= "template" (Type | Signature) ID ... */
 				if (parseType() || parseSignature())
+                {
 					parseID(K_TEMPLATE);
+                }
 				break;
 			case T_MODULEPAR:
 				/* A.1.6.1.12 ModuleParDef ::= "modulepar"
